@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS t_saude (
 -- =====================================================
 
 INSERT IGNORE INTO t_unidades (id, nome, endereco, telefone, whatsapp, lat, lng, ativo, ordem) VALUES
-  ('uni-0001-0001-0001-000000000001', 'Petshop Lu - Santo André',
+  ('uni-0001-0001-0001-000000000001', 'Alfred Paw Palace - Santo André',
    'Av. Loreto, 238 - Jardim Santo André, Santo André - SP, 09132-410',
    '(11) 95075-2980', '(11) 97591-1800', -23.706598, -46.500752, 1, 1);
 

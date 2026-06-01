@@ -51,7 +51,7 @@ export default function Agendar() {
         setUnidades([
           {
             id: 'fallback-1',
-            nome: "Petshop Lu - Santo André",
+            nome: "Alfred Paw Palace - Santo André",
             endereco: "Av. Loreto, 238 - Jardim Santo André, Santo André - SP, 09132-410",
             telefone: "(11) 95075-2980",
             whatsapp: "(11) 97591-1800",
