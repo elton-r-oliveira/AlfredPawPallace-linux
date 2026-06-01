@@ -80,7 +80,8 @@ END //
 DROP PROCEDURE IF EXISTS s_listar_pets //
 CREATE PROCEDURE s_listar_pets(IN p_usuario_id CHAR(36))
 BEGIN
-  SELECT id, name, breed, age, weight, animal_type AS animalType, created_at
+  SELECT id, name, breed, age, weight, animal_type AS animalType,
+         photo_url AS photoUrl, created_at
   FROM t_pets
   WHERE usuario_id = p_usuario_id
   ORDER BY created_at DESC;
@@ -94,13 +95,14 @@ CREATE PROCEDURE s_criar_pet(
   IN p_breed       VARCHAR(255),
   IN p_age         INT,
   IN p_weight      DECIMAL(5,2),
-  IN p_animal_type VARCHAR(50)
+  IN p_animal_type VARCHAR(50),
+  IN p_photo_url   VARCHAR(500)
 )
 BEGIN
-  INSERT INTO t_pets (id, usuario_id, name, breed, age, weight, animal_type)
-  VALUES (p_id, p_usuario_id, p_name, p_breed, p_age, p_weight, p_animal_type);
+  INSERT INTO t_pets (id, usuario_id, name, breed, age, weight, animal_type, photo_url)
+  VALUES (p_id, p_usuario_id, p_name, p_breed, p_age, p_weight, p_animal_type, p_photo_url);
 
-  SELECT id, name, breed, age, weight, animal_type AS animalType
+  SELECT id, name, breed, age, weight, animal_type AS animalType, photo_url AS photoUrl
   FROM t_pets WHERE id = p_id;
 END //
 
@@ -112,7 +114,8 @@ CREATE PROCEDURE s_atualizar_pet(
   IN p_breed       VARCHAR(255),
   IN p_age         INT,
   IN p_weight      DECIMAL(5,2),
-  IN p_animal_type VARCHAR(50)
+  IN p_animal_type VARCHAR(50),
+  IN p_photo_url   VARCHAR(500)
 )
 BEGIN
   UPDATE t_pets
@@ -120,10 +123,11 @@ BEGIN
       breed       = p_breed,
       age         = p_age,
       weight      = p_weight,
-      animal_type = p_animal_type
+      animal_type = p_animal_type,
+      photo_url   = COALESCE(p_photo_url, photo_url)
   WHERE id = p_id AND usuario_id = p_usuario_id;
 
-  SELECT id, name, breed, age, weight, animal_type AS animalType
+  SELECT id, name, breed, age, weight, animal_type AS animalType, photo_url AS photoUrl
   FROM t_pets WHERE id = p_id;
 END //
 

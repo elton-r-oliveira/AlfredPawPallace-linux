@@ -4,18 +4,13 @@ import { style } from "./styles";
 import { MaterialIcons, Fontisto } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 
-import { petService } from "../../services/petService";
+import { petService, Pet } from "../../services/petService";
 import { getPetImage } from "../../utils/petUtils";
 import { PawLoader } from "../../components/PawLoader";
+import { API_URL } from "../../lib/api";
 
-interface Pet {
-  id: string;
-  name: string;
-  breed: string;
-  age: number;
-  weight: number;
-  animalType: string;
-}
+const getPetSource = (pet: Pet) =>
+  pet.photoUrl ? { uri: `${API_URL}${pet.photoUrl}` } : getPetImage(pet.animalType);
 
 export default function Pets({ navigation }: any) {
   const [pets, setPets] = useState<Pet[]>([]);
@@ -157,7 +152,7 @@ export default function Pets({ navigation }: any) {
                 elevation: 3,
               }}
             >
-              <Image source={getPetImage(item.animalType)} style={{ width: 80, height: 80, marginBottom: 10 }} />
+              <Image source={getPetSource(item)} style={{ width: 80, height: 80, marginBottom: 10 }} />
               <Text style={style.petName}>{item.name}</Text>
               <Text style={style.petRace}>{item.breed}</Text>
               <Text style={style.petRace}>{item.age} anos • {item.weight}Kg</Text>
@@ -184,7 +179,7 @@ export default function Pets({ navigation }: any) {
           {pets.map((pet) => (
             <View key={pet.id} style={style.petCard}>
               <View style={style.petLeft}>
-                <Image source={getPetImage(pet.animalType)} style={style.petImage} />
+                <Image source={getPetSource(pet)} style={style.petImage} />
                 <View style={style.petInfo}>
                   <Text style={style.petName}>{pet.name}</Text>
                   <Text style={style.petRace}>{pet.breed}</Text>

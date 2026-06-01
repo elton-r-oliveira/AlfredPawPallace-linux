@@ -8,10 +8,12 @@ import {
   TextInput,
   Image,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { style } from "./styles";
 import { MaterialIcons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 import { petService } from "../../services/petService";
+import { API_URL } from "../../lib/api";
 
 const animalTypes = [
   { label: "Cão", value: "dog", image: require("../../assets/pets/dog.png") },
@@ -29,12 +31,63 @@ export default function CadastrarPet({ route, navigation }: any) {
   const [age, setAge] = useState(existingPet?.age?.toString() || '');
   const [weight, setWeight] = useState(existingPet?.weight?.toString() || '');
   const [animalType, setAnimalType] = useState(existingPet?.animalType || 'dog');
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+
+  const existingPhotoUrl = existingPet?.photoUrl
+    ? `${API_URL}${existingPet.photoUrl}`
+    : null;
+
+  const previewSource = photoUri
+    ? { uri: photoUri }
+    : existingPhotoUrl
+    ? { uri: existingPhotoUrl }
+    : null;
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria para escolher uma foto.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (!result.canceled) {
+      setPhotoUri(result.assets[0].uri);
+    }
+  };
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permissão necessária', 'Precisamos de acesso à câmera para tirar uma foto.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (!result.canceled) {
+      setPhotoUri(result.assets[0].uri);
+    }
+  };
+
+  const handlePickPhoto = () => {
+    Alert.alert('Foto do Pet', 'Como deseja adicionar a foto?', [
+      { text: 'Câmera', onPress: takePhoto },
+      { text: 'Galeria', onPress: pickImage },
+      { text: 'Cancelar', style: 'cancel' },
+    ]);
+  };
 
   const handleRegisterPet = async () => {
     if (!name || !breed || !age || !weight) {
       return Alert.alert('Atenção', 'Por favor, preencha todos os campos obrigatórios.');
     }
-
     try {
       await petService.criar({
         name,
@@ -42,6 +95,7 @@ export default function CadastrarPet({ route, navigation }: any) {
         age: parseInt(age),
         weight: parseFloat(weight.replace(',', '.')),
         animalType,
+        photoUri: photoUri ?? undefined,
       });
       Alert.alert('Sucesso', `${name} foi cadastrado com sucesso!`);
       setName('');
@@ -49,6 +103,7 @@ export default function CadastrarPet({ route, navigation }: any) {
       setAge('');
       setWeight('');
       setAnimalType('dog');
+      setPhotoUri(null);
     } catch (error) {
       console.error("Erro ao cadastrar pet:", error);
       Alert.alert('Erro', 'Não foi possível cadastrar o pet.');
@@ -64,6 +119,7 @@ export default function CadastrarPet({ route, navigation }: any) {
         age: parseInt(age),
         weight: parseFloat(weight.replace(',', '.')),
         animalType,
+        photoUri: photoUri ?? undefined,
       });
       Alert.alert("Sucesso", `${name} foi atualizado com sucesso!`);
       navigation.goBack();
@@ -76,9 +132,29 @@ export default function CadastrarPet({ route, navigation }: any) {
   return (
     <View style={style.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Text style={style.sectionTitle}>Cadastrar Pet</Text>
+        <Text style={style.sectionTitle}>{isEditing ? 'Editar Pet' : 'Cadastrar Pet'}</Text>
 
         <View style={style.formContainer}>
+
+          {/* Foto do pet */}
+          <View style={style.inputGroup}>
+            <Text style={style.inputLabel}>Foto do Pet</Text>
+            <TouchableOpacity style={style.photoPickerButton} onPress={handlePickPhoto} activeOpacity={0.8}>
+              {previewSource && (
+                <Image source={previewSource} style={style.petPhotoPreview} />
+              )}
+              <MaterialIcons
+                name={previewSource ? "edit" : "add-a-photo"}
+                size={30}
+                color={previewSource ? "#fff" : "#aaa"}
+              />
+              <Text style={style.photoPickerText}>
+                {previewSource ? 'Trocar foto' : 'Toque para adicionar'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Tipo de animal */}
           <View style={style.inputGroup}>
             <ScrollView
               horizontal
