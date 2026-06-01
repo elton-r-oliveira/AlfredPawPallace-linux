@@ -9,7 +9,7 @@ import {
     Modal,
 } from 'react-native';
 import { style } from './styles';
-import { getPetImage } from '../../utils/petUtils'; // Import da função utilitária
+import { getPetSource } from '../../utils/petUtils';
 
 interface Pet {
     id: string;
@@ -18,6 +18,7 @@ interface Pet {
     age: number;
     weight: number;
     animalType: string;
+    photoUrl?: string;
 }
 
 interface PetSelectorModalProps {
@@ -57,7 +58,7 @@ export default function PetSelectorModal({
                                     onPress={() => onSelectPet(item)}
                                 >
                                     <Image
-                                        source={getPetImage(item.animalType)} // ✅ Usando a função do utilitário
+                                        source={getPetSource(item.animalType, item.photoUrl)}
                                         style={style.petOptionImage}
                                     />
                                     <View style={style.petOptionInfo}>

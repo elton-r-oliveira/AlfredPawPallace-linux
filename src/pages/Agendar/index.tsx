@@ -11,7 +11,7 @@ import { AgendarServico } from "../../components/AgendarServico";
 import { MeusAgendamentos } from "../../components/MeusAgendamentos";
 import { ModalDetalhesAgendamento } from "../../components/ModalDetalhesAgendamento";
 
-import { getPetImage } from "../../utils/petUtils";
+import { getPetSource } from "../../utils/petUtils";
 import { themes } from "../../global/themes";
 
 const formatDate = (date: Date) => date.toLocaleDateString('pt-BR');
@@ -255,7 +255,7 @@ export default function Agendar() {
             handleSelectService={handleSelectService}
             onChangeDate={onChangeDate}
             handleAgendar={handleAgendar}
-            getPetImage={getPetImage}
+            getPetImage={getPetSource}
             formatDate={formatDate}
             formatTime={formatTime}
             horariosFixos={horariosFixos}
@@ -276,7 +276,7 @@ export default function Agendar() {
           setModalDetalhesVisible={setModalDetalhesVisible}
           agendamentoSelecionado={agendamentoSelecionado}
           unidades={unidades}
-          getPetImage={getPetImage}
+          getPetImage={getPetSource}
           onCancelarAgendamento={cancelarAgendamento}
         />
       )}

@@ -29,7 +29,7 @@ export interface AgendarServicoProps {
     handleSelectService: (service: any) => void;
     onChangeDate: (event: any, selectedDate?: Date) => void;
     handleAgendar: () => void;
-    getPetImage: (animalType: string) => any;
+    getPetImage: (animalType: string, photoUrl?: string) => any;
     formatDate: (date: Date) => string;
     formatTime: (date: Date) => string;
     horariosFixos: string[];
@@ -220,7 +220,7 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                             {petSelecionado ? (
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                     <Image
-                                        source={getPetImage(petSelecionado?.animalType || "dog")}
+                                        source={getPetImage(petSelecionado?.animalType || "dog", petSelecionado?.photoUrl)}
                                         style={{ width: 24, height: 24, marginRight: 8, borderRadius: 12 }}
                                     />
                                     <Text style={[style.selectInputText, { color: themes.colors.secundary, fontWeight: '600' }]}>

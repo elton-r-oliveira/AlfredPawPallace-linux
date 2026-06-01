@@ -11,7 +11,7 @@ import { petService } from "../../services/petService";
 import HealthRecordModal from '../../components/HealthRecordModal';
 import PetSelectorModal from '../../components/PetSelectorModal';
 
-import { getPetImage, getTypeLabel, formatDate } from '../../utils/petUtils';
+import { getPetSource, getTypeLabel, formatDate } from '../../utils/petUtils';
 import { HealthRecord } from "../../@types/HealthRecord";
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
@@ -23,6 +23,7 @@ interface Pet {
   age: number;
   weight: number;
   animalType: string;
+  photoUrl?: string;
 }
 
 export default function Saude() {
@@ -195,7 +196,7 @@ export default function Saude() {
           <View style={style.petSelectorContent}>
             {selectedPet ? (
               <>
-                <Image source={getPetImage(selectedPet.animalType)} style={style.petSelectorImage} />
+                <Image source={getPetSource(selectedPet.animalType, selectedPet.photoUrl)} style={style.petSelectorImage} />
                 <View style={style.petSelectorInfo}>
                   <Text style={style.petSelectorName}>{selectedPet.name}</Text>
                   <Text style={style.petSelectorDetails}>{selectedPet.breed} • {selectedPet.age} anos</Text>

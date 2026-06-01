@@ -1,3 +1,10 @@
+import { API_URL } from '../lib/api';
+
+export const getPetSource = (animalType: string, photoUrl?: string | null) => {
+  if (photoUrl) return { uri: `${API_URL}${photoUrl}` };
+  return getPetImage(animalType);
+};
+
 export const getPetImage = (type: string) => {
     switch (type.toLowerCase()) {
         case "dog":
