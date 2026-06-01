@@ -1,12 +1,16 @@
 -- =====================================================
 -- ALFRED PAW PALACE - Passo 2: Stored Procedures
 --
--- ANTES DE EXECUTAR no DBBeaver:
+-- OPÇÃO 1 - Terminal SSH na VM (recomendado):
+--   mysql -u SEU_USUARIO -p BDAlfredPawPalace < proc.sql
+--
+-- OPÇÃO 2 - DBBeaver:
 --   1. Abra este arquivo no SQL Editor
---   2. Clique no ícone de configurações do editor (≡)
---      ou vá em: SQL Editor > Smart Execution
---   3. Mude o "Statement delimiter" de ";" para "//"
---   4. Execute o script inteiro (Ctrl+Shift+Enter)
+--   2. Vá em: Preferences > Editors > SQL Editor > Processamento de SQL
+--   3. Em "Delimitadores", mude para "//" e marque "Ignorar delimitador nativo"
+--   4. Clique em "Aplicar e Fechar"
+--   5. Feche e reabra o arquivo no editor
+--   6. Execute o script inteiro (Ctrl+Shift+Enter)
 -- =====================================================
 
 USE BDAlfredPawPalace //
@@ -300,3 +304,5 @@ BEGIN
   WHERE ativo = 1
   ORDER BY created_at DESC;
 END //
+
+DELIMITER ;
