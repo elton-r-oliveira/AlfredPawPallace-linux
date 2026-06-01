@@ -4,8 +4,8 @@ const jwt     = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const pool    = require('../db');
 
-const JWT_SECRET        = process.env.JWT_SECRET        || 'alfred_secret_dev';
-const CODIGO_FUNCIONARIO = process.env.CODIGO_FUNCIONARIO || 'ALFRED2025';
+const JWT_SECRET        = process.env.JWT_SECRET;
+const CODIGO_FUNCIONARIO = process.env.CODIGO_FUNCIONARIO;
 
 // POST /auth/login
 router.post('/login', async (req, res) => {
