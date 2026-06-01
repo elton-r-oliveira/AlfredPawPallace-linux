@@ -1,4 +1,3 @@
-// Home.tsx
 import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, ImageSourcePropType } from "react-native";
 import { style } from "./styles";
@@ -6,15 +5,14 @@ import { MaterialIcons, Ionicons, FontAwesome } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 import TopBar from "../../components/topBar";
 import { CarrosselNovidades, NovidadeCard } from "../../components/CarrosselNovidades";
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { BottomTabParamList } from '../../@types/types';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { auth, db } from "../../lib/firebaseConfig";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc, collection, query, where, getDocs, Timestamp, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { useAuth } from "../../contexts/AuthContext";
+import { agendamentoService } from "../../services/agendamentoService";
+import { promocaoService, Promocao } from "../../services/promocaoService";
 
-// Interface para o agendamento
 interface Agendamento {
   id: string;
   service: string;
@@ -24,34 +22,15 @@ interface Agendamento {
   diasRestantes?: number;
 }
 
-// Interface para as promoções do Firebase
-interface PromocaoFirebase {
-  id: string;
-  titulo: string;
-  descricao: string;
-  categoria: 'banho' | 'tosa' | 'vacinacao' | 'consulta' | 'daycare' | 'produtos' | 'outros';
-  corFundo: string;
-  ordem: number;
-  ativo: boolean;
-}
-
-// Crie um tipo extendido para o navigation
-type HomeNavigationProp = NavigationProp<BottomTabParamList>;
-
 export default function Home() {
-  // Use 'any' temporariamente para evitar erros de tipo
   const navigation = useNavigation<any>();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { usuario } = useAuth();
   const [agendamentosRecentes, setAgendamentosRecentes] = useState<Agendamento[]>([]);
   const [loadingAgendamentos, setLoadingAgendamentos] = useState(true);
   const [novidadesCards, setNovidadesCards] = useState<NovidadeCard[]>([]);
   const [loadingPromocoes, setLoadingPromocoes] = useState(true);
   const insets = useSafeAreaInsets();
 
-  const [topBarNome, setTopBarNome] = useState("");
-  const [topBarEndereco, setTopBarEndereco] = useState("");
-
-  // Função para mapear categoria para imagem local
   const getImagemPorCategoria = (categoria: string): ImageSourcePropType => {
     const imagensMap: { [key: string]: ImageSourcePropType } = {
       'banho': require('../../assets/novidade1.png'),
@@ -62,23 +41,14 @@ export default function Home() {
       'produtos': require('../../assets/novidade4.png'),
       'outros': require('../../assets/novidade1.png'),
     };
-
     return imagensMap[categoria] || require('../../assets/novidade1.png');
   };
 
-  // Função auxiliar de navegação com type assertion segura
-  const navigateTo = <T extends keyof BottomTabParamList>(
-    routeName: T, 
-    params?: BottomTabParamList[T]
-  ) => {
+  const navigateTo = <T extends keyof BottomTabParamList>(routeName: T, params?: BottomTabParamList[T]) => {
     navigation.navigate(routeName, params);
   };
 
-  // Função para converter promoção do Firebase para NovidadeCard
-  const converterParaNovidadeCard = (promocao: PromocaoFirebase): NovidadeCard => {
-    const imagemSource = getImagemPorCategoria(promocao.categoria);
-
-    // Define ação baseada na categoria
+  const converterParaNovidadeCard = (promocao: Promocao): NovidadeCard => {
     const acao = () => {
       switch (promocao.categoria) {
         case 'banho':
@@ -97,7 +67,6 @@ export default function Home() {
         case 'produtos':
           navigateTo("Saúde", { tela: 'produtos' });
           break;
-        case 'outros':
         default:
           navigateTo("Pets");
       }
@@ -107,9 +76,9 @@ export default function Home() {
       id: promocao.id,
       titulo: promocao.titulo,
       descricao: promocao.descricao,
-      imagem: imagemSource,
+      imagem: getImagemPorCategoria(promocao.categoria),
       corFundo: promocao.corFundo,
-      acao: acao
+      acao,
     };
   };
 
@@ -120,7 +89,7 @@ export default function Home() {
       descricao: 'Na primeira visita ganhe uma tosa higiênica gratuita!',
       imagem: require('../../assets/novidade1.png'),
       corFundo: themes.colors.inputText,
-      acao: () => navigateTo("Pets")
+      acao: () => navigateTo("Pets"),
     },
     {
       id: '2',
@@ -128,7 +97,7 @@ export default function Home() {
       descricao: 'Deixe seu pet conosco durante o dia com atividades recreativas',
       imagem: require('../../assets/novidade2.png'),
       corFundo: '#FF6B35',
-      acao: () => navigateTo("Pets")
+      acao: () => navigateTo("Pets"),
     },
     {
       id: '3',
@@ -136,7 +105,7 @@ export default function Home() {
       descricao: 'Agende a vacinação do seu pet com 10% de desconto',
       imagem: require('../../assets/novidade3.png'),
       corFundo: '#4ECDC4',
-      acao: () => navigateTo("Pets")
+      acao: () => navigateTo("Pets"),
     },
     {
       id: '4',
@@ -144,67 +113,36 @@ export default function Home() {
       descricao: 'Nova linha de produtos naturais e orgânicos chegou!',
       imagem: require('../../assets/novidade4.png'),
       corFundo: '#45B7D1',
-      acao: () => navigateTo("Pets")
-    }
+      acao: () => navigateTo("Pets"),
+    },
   ];
 
-  // Função para calcular dias restantes
   const calcularDiasRestantes = (dataAgendamento: Date): number => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
-
     const dataAgend = new Date(dataAgendamento);
     dataAgend.setHours(0, 0, 0, 0);
-
     const diffTime = dataAgend.getTime() - hoje.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    return diffDays;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
-  // Função para carregar agendamentos recentes
-  const carregarAgendamentosRecentes = async (userId: string) => {
+  const carregarAgendamentosRecentes = async () => {
     try {
       setLoadingAgendamentos(true);
+      const data = await agendamentoService.listar({ futuro: true, status: 'Pendente,Confirmado', limite: 5 });
 
-      const agora = Timestamp.now();
-      const q = query(
-        collection(db, "agendamentos"),
-        where("userId", "==", userId),
-        where("dataHoraAgendamento", ">=", agora),
-        where("status", "in", ["Pendente", "Confirmado"]),
-        orderBy("dataHoraAgendamento", "asc"),
-        limit(5)
-      );
+      const lista: Agendamento[] = data
+        .map(item => ({
+          id: item.id,
+          service: item.service,
+          dataHoraAgendamento: new Date(item.dataHoraAgendamento),
+          petNome: item.petNome || "Pet",
+          status: item.status,
+          diasRestantes: calcularDiasRestantes(new Date(item.dataHoraAgendamento)),
+        }))
+        .filter(a => (a.diasRestantes ?? 0) >= 0);
 
-      const querySnapshot = await getDocs(q);
-      const agendamentos: Agendamento[] = [];
-
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-
-        let dataHoraAgendamento: Date;
-        if (data.dataHoraAgendamento && data.dataHoraAgendamento.toDate) {
-          dataHoraAgendamento = data.dataHoraAgendamento.toDate();
-        } else {
-          dataHoraAgendamento = new Date(data.dataHoraAgendamento);
-        }
-
-        const diasRestantes = calcularDiasRestantes(dataHoraAgendamento);
-
-        if (diasRestantes >= 0) {
-          agendamentos.push({
-            id: doc.id,
-            service: data.service,
-            dataHoraAgendamento: dataHoraAgendamento,
-            petNome: data.petNome || "Pet",
-            status: data.status,
-            diasRestantes: diasRestantes
-          });
-        }
-      });
-
-      setAgendamentosRecentes(agendamentos);
+      setAgendamentosRecentes(lista);
     } catch (error) {
       console.error("Erro ao carregar agendamentos recentes:", error);
     } finally {
@@ -212,74 +150,29 @@ export default function Home() {
     }
   };
 
-  // Função para carregar promoções do Firebase
-  const carregarPromocoes = () => {
+  const carregarPromocoes = async () => {
     setLoadingPromocoes(true);
-
-    const unsubscribe = onSnapshot(
-      query(
-        collection(db, 'promocoes'),
-        where('ativo', '==', true)
-      ),
-      (snapshot) => {
-        try {
-          const promocoes: NovidadeCard[] = [];
-          snapshot.forEach((doc) => {
-            const data = doc.data();
-
-            // Valida os dados obrigatórios
-            if (data.titulo && data.descricao) {
-              const promocaoFirebase: PromocaoFirebase = {
-                id: doc.id,
-                titulo: data.titulo,
-                descricao: data.descricao,
-                categoria: data.categoria || 'outros',
-                corFundo: data.corFundo || '#FF6B35',
-                ordem: data.ordem || 1,
-                ativo: data.ativo !== undefined ? data.ativo : true
-              };
-
-              const novidadeCard = converterParaNovidadeCard(promocaoFirebase);
-              promocoes.push(novidadeCard);
-            }
-          });
-
-          // Ordenação no cliente (temporária)
-          promocoes.sort((a, b) => {
-            const promocaoA = snapshot.docs.find(doc => doc.id === a.id)?.data();
-            const promocaoB = snapshot.docs.find(doc => doc.id === b.id)?.data();
-            return (promocaoA?.ordem || 0) - (promocaoB?.ordem || 0);
-          });
-
-          setNovidadesCards(promocoes.length > 0 ? promocoes : getPromocoesFallback());
-        } catch (error) {
-          console.error("Erro ao processar promoções:", error);
-          setNovidadesCards(getPromocoesFallback());
-        } finally {
-          setLoadingPromocoes(false);
-        }
-      },
-      (error) => {
-        console.error("Erro ao carregar promoções:", error);
+    try {
+      const data = await promocaoService.listar();
+      if (data.length > 0) {
+        const cards = data
+          .sort((a, b) => a.ordem - b.ordem)
+          .map(p => converterParaNovidadeCard(p));
+        setNovidadesCards(cards);
+      } else {
         setNovidadesCards(getPromocoesFallback());
-        setLoadingPromocoes(false);
       }
-    );
-
-    return unsubscribe;
+    } catch {
+      setNovidadesCards(getPromocoesFallback());
+    } finally {
+      setLoadingPromocoes(false);
+    }
   };
 
-  // Função para formatar data
-  const formatarData = (date: Date): string => {
-    return date.toLocaleDateString('pt-BR');
-  };
+  const formatarData = (date: Date): string => date.toLocaleDateString('pt-BR');
+  const formatarHora = (date: Date): string =>
+    date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-  // Função para formatar hora
-  const formatarHora = (date: Date): string => {
-    return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  };
-
-  // Função para obter texto dos dias restantes
   const getTextoDiasRestantes = (dias: number): string => {
     if (dias === 0) return "Hoje";
     if (dias === 1) return "Amanhã";
@@ -287,7 +180,6 @@ export default function Home() {
     return "Data passada";
   };
 
-  // Função para obter cor baseada nos dias restantes
   const getCorDiasRestantes = (dias: number): string => {
     if (dias === 0) return "#FF6B35";
     if (dias === 1) return "#FFA726";
@@ -295,75 +187,27 @@ export default function Home() {
     return "#4CAF50";
   };
 
+  const temNotificacaoUrgente = (): boolean =>
+    agendamentosRecentes.some(a => a.diasRestantes !== undefined && a.diasRestantes <= 3);
+
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setCurrentUser(user);
-        setTopBarNome(user.displayName || "");
-
-        carregarAgendamentosRecentes(user.uid);
-
-        try {
-          const docRef = doc(db, "usuarios", user.uid);
-          const snapshot = await getDoc(docRef);
-          if (snapshot.exists()) {
-            const data = snapshot.data();
-            setTopBarEndereco(data.endereco || "");
-          } else {
-            setTopBarEndereco("Endereço não informado");
-          }
-        } catch (error) {
-          console.error("Erro ao carregar endereço:", error);
-          setTopBarEndereco("Endereço não informado");
-        }
-      } else {
-        setAgendamentosRecentes([]);
-      }
-    });
-
-    // Carrega as promoções
-    const unsubscribePromocoes = carregarPromocoes();
-
-    return () => {
-      unsubscribeAuth();
-      unsubscribePromocoes();
-    };
+    carregarAgendamentosRecentes();
+    carregarPromocoes();
   }, []);
 
-  // Recarregar agendamentos quando a tela ganhar foco
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      if (currentUser) {
-        carregarAgendamentosRecentes(currentUser.uid);
-      }
+      carregarAgendamentosRecentes();
     });
-
     return unsubscribe;
-  }, [navigation, currentUser]);
-
-  const temNotificacaoUrgente = (): boolean => {
-    return agendamentosRecentes.some(agendamento =>
-      agendamento.diasRestantes !== undefined &&
-      agendamento.diasRestantes <= 3
-    );
-  };
+  }, [navigation]);
 
   return (
     <View style={{ flex: 1, backgroundColor: themes.telaHome.fundo }}>
-
-      {/* TopBar fixa */}
-      <View
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          zIndex: 10,
-          backgroundColor: themes.telaHome.fundo,
-        }}
-      >
+      <View style={{ position: "absolute", left: 0, right: 0, zIndex: 10, backgroundColor: themes.telaHome.fundo }}>
         <TopBar
-          userName={topBarNome || ""}
-          location={topBarEndereco || "Endereço não informado"}
+          userName={usuario?.nome || ""}
+          location={usuario?.endereco || "Endereço não informado"}
           agendamentos={agendamentosRecentes}
           loadingAgendamentos={loadingAgendamentos}
           formatarData={formatarData}
@@ -374,7 +218,6 @@ export default function Home() {
         />
       </View>
 
-      {/* Conteúdo rolável */}
       <ScrollView
         style={style.container}
         showsVerticalScrollIndicator={false}
@@ -383,20 +226,16 @@ export default function Home() {
           paddingBottom: insets.bottom + 80,
         }}
       >
-
-        {/* COMPONENTE CARROSSEL */}
         {loadingPromocoes ? (
           <View style={style.petCard}>
             <Text style={style.petService}>Carregando promoções...</Text>
           </View>
         ) : (
-          <CarrosselNovidades
-            cards={novidadesCards}
-          />
+          <CarrosselNovidades cards={novidadesCards} />
         )}
+
         <Text style={style.sectionTitle}>O que você gostaria de fazer?</Text>
 
-        {/* Quick Actions */}
         <View style={style.quickActions}>
           <TouchableOpacity
             style={[style.actionBox, { backgroundColor: themes.telaHome.texto1 }]}
@@ -430,7 +269,6 @@ export default function Home() {
             <Text style={style.actionText}>Perfil</Text>
           </TouchableOpacity>
         </View>
-
       </ScrollView>
     </View>
   );

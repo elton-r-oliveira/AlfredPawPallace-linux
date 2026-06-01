@@ -8,6 +8,6 @@ export interface HealthRecord {
   notes?: string | null;
   petId: string;
   userId: string;
-  createdAt?: any;
-  updatedAt?: any;
+  createdAt?: string;
+  updatedAt?: string;
 }

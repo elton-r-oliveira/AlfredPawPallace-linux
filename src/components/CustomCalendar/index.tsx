@@ -13,8 +13,6 @@ import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { themes } from "../../global/themes";
 import { MaterialIcons } from "@expo/vector-icons";
 import { styles } from "./styles"
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import { db } from '../../lib/firebaseConfig';
 
 // Configurar português (mantenha igual)
 LocaleConfig.locales['pt-br'] = {
@@ -48,53 +46,8 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
   selectedDate
 }) => {
   const [diasDisponiveis, setDiasDisponiveis] = useState<string[]>([]);
-  const [diasBloqueados, setDiasBloqueados] = useState<string[]>([]);
-  const [feriados, setFeriados] = useState<string[]>([]);
-  const [configuracoesHorario, setConfiguracoesHorario] = useState<any[]>([]);
-
-  // Buscar configurações do Firebase
-  useEffect(() => {
-    // Buscar configurações de datas
-    const unsubscribeDatas = onSnapshot(
-      query(collection(db, 'configuracoes_data'), where('ativo', '==', true)),
-      (snapshot) => {
-        const bloqueados: string[] = [];
-        const feriadosList: string[] = [];
-
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          if (data.tipo === 'diaBloqueado') {
-            bloqueados.push(data.data);
-          } else if (data.tipo === 'feriado') {
-            feriadosList.push(data.data);
-          }
-        });
-
-        setDiasBloqueados(bloqueados);
-        setFeriados(feriadosList);
-      }
-    );
-
-    // Buscar configurações de horário
-    const unsubscribeHorarios = onSnapshot(
-      query(collection(db, 'configuracoes_horario')),
-      (snapshot) => {
-        const horarios: any[] = [];
-        snapshot.forEach((doc) => {
-          horarios.push({
-            id: doc.id,
-            ...doc.data()
-          });
-        });
-        setConfiguracoesHorario(horarios);
-      }
-    );
-
-    return () => {
-      unsubscribeDatas();
-      unsubscribeHorarios();
-    };
-  }, []);
+  const diasBloqueados: string[] = [];
+  const feriados: string[] = [];
 
   useEffect(() => {
     const carregarDiasDisponiveis = () => {
@@ -112,15 +65,7 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
         const isFeriado = feriados.includes(dateStr);
         const isDiaBloqueado = diasBloqueados.includes(dateStr);
 
-        // ✅ NOVA LÓGICA: Verificar configuração do dia
-        const configDia = configuracoesHorario.find(h => h.diaSemana === diaDaSemana);
-
-        // Dia está disponível se:
-        // 1. NÃO for feriado
-        // 2. NÃO for dia bloqueado  
-        // 3. E (não tem configuração OU está configurado como ABERTO)
-        const isDiaDisponivel = !isFeriado && !isDiaBloqueado &&
-          (!configDia || configDia.aberto === true);
+        const isDiaDisponivel = !isFeriado && !isDiaBloqueado && diaDaSemana !== 0;
 
         if (isDiaDisponivel) {
           disponiveis.push(dateStr);
@@ -132,7 +77,7 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
     };
 
     carregarDiasDisponiveis();
-  }, [diasBloqueados, feriados, configuracoesHorario]);
+  }, []);
 
   const createLocalDate = (dateString: string): Date => {
     const [year, month, day] = dateString.split('-').map(Number);

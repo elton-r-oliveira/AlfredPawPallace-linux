@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Text, View, Image, TouchableOpacity, Alert, ActivityIndicator, TextInput } from "react-native";
+import { Text, View, Image, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 
 import { style } from "./styles";
 import Logo from "../../assets/logo.png";
@@ -8,16 +8,9 @@ import { themes } from "../../global/themes";
 import { Input } from "../../components/input";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../@types/types";
+import { authService } from "../../services/authService";
 
-// Firebase
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth, db } from "../../lib/firebaseConfig";
-import { doc, setDoc } from "firebase/firestore";
-
-type CadastroScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Cadastro"
->;
+type CadastroScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Cadastro">;
 
 type Props = {
   navigation: CadastroScreenNavigationProp;
@@ -31,8 +24,6 @@ export default function Cadastro({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
   const [tipo, setTipo] = useState<"cliente" | "funcionario">("cliente");
   const [codigoFuncionario, setCodigoFuncionario] = useState("");
-
-  const CODIGO_SECRETO = "147"; // Altere para o código que só os funcionários terão
 
   async function handleCadastro() {
     try {
@@ -48,29 +39,26 @@ export default function Cadastro({ navigation }: Props) {
         return Alert.alert("Atenção", "As senhas não coincidem!");
       }
 
-      // Se for funcionário, validar o código
-      if (tipo === "funcionario" && codigoFuncionario !== CODIGO_SECRETO) {
-        setLoading(false);
-        return Alert.alert("Atenção", "Código de funcionário inválido!");
-      }
-
-      // Criação do usuário no Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCredential.user, { displayName: nome });
-
-      // Criação do documento no Firestore
-      await setDoc(doc(db, "usuarios", userCredential.user.uid), {
-        nome,
-        email,
-        tipo,
-        codigo: tipo === "funcionario" ? codigoFuncionario : null,
-      });
+      await authService.register(nome, email, password, tipo, codigoFuncionario || undefined);
 
       Alert.alert("Conta criada com sucesso!");
       navigation.navigate("Login");
     } catch (error: any) {
-      console.log("Erro no cadastro:", error.message);
-      Alert.alert("Erro", error.message);
+      console.log("Erro no cadastro:", error);
+
+      let errorMessage = "Ocorreu um erro ao criar a conta.";
+      const status = error.response?.status;
+      if (status === 409) {
+        errorMessage = "Este e-mail já está em uso.";
+      } else if (status === 400) {
+        errorMessage = error.response?.data?.message || "Dados inválidos.";
+      } else if (error.message === "Network Error") {
+        errorMessage = "Erro de conexão. Verifique sua internet.";
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+
+      Alert.alert("Erro", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -82,11 +70,10 @@ export default function Cadastro({ navigation }: Props) {
         <Image source={Logo} />
         <Text style={style.titulo}>Bem-vindo a Lu PetShop</Text>
 
-        {/* Toggle Cliente / Funcionário */}
         <View
           style={{
             position: "absolute",
-            bottom: -40.2, 
+            bottom: -40.2,
             left: 0,
             right: 0,
             zIndex: 10,
@@ -97,11 +84,11 @@ export default function Cadastro({ navigation }: Props) {
           <View
             style={{
               flexDirection: "row",
-              width: "70%", // largura do grupo de botões
+              width: "70%",
               borderRadius: 25,
               overflow: "hidden",
-              elevation: 5, // sombra Android
-              shadowColor: "#000", // sombra iOS
+              elevation: 5,
+              shadowColor: "#000",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.2,
               shadowRadius: 6,
@@ -116,12 +103,7 @@ export default function Cadastro({ navigation }: Props) {
               }}
               onPress={() => setTipo("cliente")}
             >
-              <Text
-                style={{
-                  color: tipo === "cliente" ? "#fff" : "#555",
-                  fontWeight: "600",
-                }}
-              >
+              <Text style={{ color: tipo === "cliente" ? "#fff" : "#555", fontWeight: "600" }}>
                 Cliente
               </Text>
             </TouchableOpacity>
@@ -135,12 +117,7 @@ export default function Cadastro({ navigation }: Props) {
               }}
               onPress={() => setTipo("funcionario")}
             >
-              <Text
-                style={{
-                  color: tipo === "funcionario" ? "#fff" : "#555",
-                  fontWeight: "600",
-                }}
-              >
+              <Text style={{ color: tipo === "funcionario" ? "#fff" : "#555", fontWeight: "600" }}>
                 Funcionário
               </Text>
             </TouchableOpacity>
@@ -151,7 +128,6 @@ export default function Cadastro({ navigation }: Props) {
       <View style={style.boxMid}>
         <Text style={style.entrar}>Cadastre-se</Text>
 
-        {/* Nome + Código funcionário */}
         {tipo === "funcionario" ? (
           <View style={{ flexDirection: "row", gap: 8 }}>
             <View style={{ flex: 1 }}>
@@ -163,14 +139,13 @@ export default function Cadastro({ navigation }: Props) {
                 IconRightName="person"
               />
             </View>
-
             <View style={{ flex: 1 }}>
               <Input
                 placeholder="Código de funcionário"
                 value={codigoFuncionario}
                 onChangeText={setCodigoFuncionario}
                 IconRight={MaterialIcons}
-                IconRightName="badge" // ícone representando um crachá
+                IconRightName="badge"
               />
             </View>
           </View>
@@ -184,8 +159,6 @@ export default function Cadastro({ navigation }: Props) {
           />
         )}
 
-
-        {/* Email */}
         <Input
           placeholder="E-mail"
           keyboardType="email-address"
@@ -195,7 +168,6 @@ export default function Cadastro({ navigation }: Props) {
           IconRightName="email"
         />
 
-        {/* Senha */}
         <Input
           placeholder="Senha"
           secureTextEntry
@@ -205,7 +177,6 @@ export default function Cadastro({ navigation }: Props) {
           IconRightName="eye-closed"
         />
 
-        {/* Confirmar senha */}
         <Input
           placeholder="Confirmar senha"
           secureTextEntry
@@ -215,7 +186,6 @@ export default function Cadastro({ navigation }: Props) {
           IconRightName="eye-closed"
         />
 
-        {/* Botão cadastrar */}
         <TouchableOpacity style={style.button} onPress={handleCadastro}>
           {loading ? (
             <ActivityIndicator color={themes.colors.lightGray} size="small" />
@@ -224,13 +194,9 @@ export default function Cadastro({ navigation }: Props) {
           )}
         </TouchableOpacity>
 
-        {/* Já tem conta? */}
         <Text style={style.textCadastro}>
           Já tem conta?{" "}
-          <Text
-            style={style.linkCadastro}
-            onPress={() => navigation.navigate("Login")}
-          >
+          <Text style={style.linkCadastro} onPress={() => navigation.navigate("Login")}>
             Fazer login
           </Text>
         </Text>

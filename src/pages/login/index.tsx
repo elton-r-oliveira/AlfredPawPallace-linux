@@ -1,4 +1,3 @@
-// Login.tsx
 import React, { useState, useEffect } from "react";
 import {
     Text,
@@ -11,30 +10,25 @@ import {
 } from "react-native";
 
 import { style } from "./styles";
-import Logo from "../../assets/logo.png"; 
+import Logo from "../../assets/logo.png";
 import { MaterialIcons, Octicons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 import { Input } from "../../components/input";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../@types/types";
 
-// 🔹 Import Firebase
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../lib/firebaseConfig";
-
 import BiometricAuth from "./biometricAuth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "../../contexts/AuthContext";
 
-type LoginScreenNavigationProp = NativeStackNavigationProp<
-    RootStackParamList,
-    "Login"
->;
+type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Login">;
 
 type Props = {
     navigation: LoginScreenNavigationProp;
 };
 
 export default function Login({ navigation }: Props) {
+    const { login } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -56,7 +50,7 @@ export default function Login({ navigation }: Props) {
             const storedEmail = await AsyncStorage.getItem("@saved_email");
             if (storedEmail) {
                 setSavedEmail(storedEmail);
-                setEmail(storedEmail); // ✅ Preenche o campo email automaticamente
+                setEmail(storedEmail);
             }
         } catch (error) {
             console.log("Erro ao buscar credenciais salvas:", error);
@@ -66,16 +60,14 @@ export default function Login({ navigation }: Props) {
     async function handleBiometricLogin() {
         try {
             setLoading(true);
-            
+
             const isAuthenticated = await BiometricAuth.authenticate();
-            
+
             if (isAuthenticated && savedEmail) {
-                // Buscar a senha salva
                 const savedPassword = await AsyncStorage.getItem("@saved_password");
-                
+
                 if (savedPassword) {
-                    // Fazer login automaticamente
-                    await signInWithEmailAndPassword(auth, savedEmail, savedPassword);
+                    await login(savedEmail, savedPassword);
                     navigation.replace("Home");
                 } else {
                     Alert.alert("Erro", "Credenciais não encontradas. Faça login manualmente.");
@@ -85,16 +77,8 @@ export default function Login({ navigation }: Props) {
             }
         } catch (error: any) {
             console.log("Erro no login biométrico:", error);
-            
-            // Tratamento de erros específicos do Firebase
-            let errorMessage = "Falha na autenticação biométrica";
-            if (error.code === 'auth/invalid-email') {
-                errorMessage = "E-mail salvo é inválido";
-            } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                errorMessage = "Credenciais salvas estão incorretas";
-            }
-            
-            Alert.alert("Erro", errorMessage);
+            const msg = error.response?.data?.message || "Falha na autenticação biométrica";
+            Alert.alert("Erro", msg);
         } finally {
             setLoading(false);
         }
@@ -109,14 +93,12 @@ export default function Login({ navigation }: Props) {
                 return Alert.alert("Atenção", "Informe o e-mail e a senha!");
             }
 
-            await signInWithEmailAndPassword(auth, email, password);
+            await login(email, password);
 
-            // Salvar credenciais para biometria (apenas se o usuário fez login com sucesso)
             if (biometricAvailable) {
                 try {
                     await AsyncStorage.setItem("@saved_email", email);
                     await AsyncStorage.setItem("@saved_password", password);
-                    console.log("Credenciais salvas para biometria");
                 } catch (storageError) {
                     console.log("Erro ao salvar credenciais:", storageError);
                 }
@@ -125,32 +107,29 @@ export default function Login({ navigation }: Props) {
             navigation.replace("Home");
 
         } catch (error: any) {
-            console.log("Erro no login:", error.message);
-            
-            // Tratamento de erros específicos do Firebase
-            let errorMessage = "Ocorreu um erro ao fazer login.";
-            if (error.code === 'auth/invalid-email') {
-                errorMessage = "O e-mail informado é inválido.";
-            } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                errorMessage = "E-mail ou senha incorretos.";
-            } else if (error.code === 'auth/network-request-failed') {
-                errorMessage = "Erro de conexão. Verifique sua internet.";
-            }
-            
-            Alert.alert("Erro", errorMessage);
+            console.log("Erro no login:", error);
 
+            let errorMessage = "Ocorreu um erro ao fazer login.";
+            const status = error.response?.status;
+            if (status === 401 || status === 400) {
+                errorMessage = "E-mail ou senha incorretos.";
+            } else if (status === 404) {
+                errorMessage = "Usuário não encontrado.";
+            } else if (error.message === "Network Error") {
+                errorMessage = "Erro de conexão. Verifique sua internet.";
+            } else if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            }
+
+            Alert.alert("Erro", errorMessage);
         } finally {
             setLoading(false);
         }
     }
 
-    // ✅ Função para determinar o texto do botão de biometria
     const getBiometricButtonText = () => {
-        if (Platform.OS === 'ios') {
-            return 'Entrar com Touch ID';
-        } else {
-            return 'Entrar com Biometria';
-        }
+        if (Platform.OS === 'ios') return 'Entrar com Touch ID';
+        return 'Entrar com Biometria';
     };
 
     return (
@@ -163,7 +142,6 @@ export default function Login({ navigation }: Props) {
             <View style={style.boxMid}>
                 <Text style={style.entrar}>Entrar</Text>
 
-                {/* Input de e-mail */}
                 <Input
                     placeholder="E-mail"
                     keyboardType="email-address"
@@ -173,7 +151,6 @@ export default function Login({ navigation }: Props) {
                     IconRightName="email"
                 />
 
-                {/* Input de senha */}
                 <Input
                     placeholder="Senha"
                     secureTextEntry
@@ -183,37 +160,26 @@ export default function Login({ navigation }: Props) {
                     IconRightName="eye-closed"
                 />
 
-                {/* Botão de entrar normal */}
-                <TouchableOpacity 
-                    style={style.button} 
+                <TouchableOpacity
+                    style={style.button}
                     onPress={handleLogin}
                     disabled={loading}
                 >
                     {loading ? (
-                        <ActivityIndicator 
-                            color={themes.colors.lightGray} 
-                            size={"small"} 
-                        />
+                        <ActivityIndicator color={themes.colors.lightGray} size={"small"} />
                     ) : (
                         <Text style={style.textButton}>Entrar</Text>
                     )}
                 </TouchableOpacity>
 
-                {/* Botão de biometria (aparece apenas se disponível) */}
                 {biometricAvailable && savedEmail && (
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={[style.button, style.biometricButton]}
                         onPress={handleBiometricLogin}
                         disabled={loading}
                     >
-                        <MaterialIcons 
-                            name="fingerprint" 
-                            size={24} 
-                            color={themes.colors.lightGray} 
-                        />
-                        <Text style={style.textButton}>
-                            {getBiometricButtonText()}
-                        </Text>
+                        <MaterialIcons name="fingerprint" size={24} color={themes.colors.lightGray} />
+                        <Text style={style.textButton}>{getBiometricButtonText()}</Text>
                     </TouchableOpacity>
                 )}
 
