@@ -13,6 +13,7 @@ import {
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 import { style } from "./styles"
+import { API_URL } from "../../lib/api";
 
 interface ModalDetalhesAgendamentoProps {
     modalDetalhesVisible: boolean;
@@ -200,7 +201,11 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                             <Text style={style.sectionTitle}>Pet Agendado</Text>
                             <View style={style.petCard}>
                                 <Image
-                                    source={getPetImage(agendamentoSelecionado.petAnimalType || "dog")}
+                                    source={
+                                        agendamentoSelecionado.petPhotoUrl
+                                            ? { uri: `${API_URL}${agendamentoSelecionado.petPhotoUrl}` }
+                                            : getPetImage(agendamentoSelecionado.petAnimalType || "dog")
+                                    }
                                     style={style.petImage}
                                 />
                                 <Text style={style.petName}>

@@ -143,9 +143,12 @@ export default function Agendar() {
   };
 
   const abrirDetalhesAgendamento = (agendamento: any) => {
+    const petId = agendamento.petId ?? agendamento.pet_id;
+    const petData = pets.find(p => p.id === petId);
     setAgendamentoSelecionado({
       ...agendamento,
-      dataHoraAgendamento: parseDate(agendamento.dataHoraAgendamento ?? (agendamento as any).data_hora_agendamento),
+      dataHoraAgendamento: parseDate(agendamento.dataHoraAgendamento ?? agendamento.data_hora_agendamento),
+      petPhotoUrl: petData?.photoUrl ?? null,
     });
     setModalDetalhesVisible(true);
   };
