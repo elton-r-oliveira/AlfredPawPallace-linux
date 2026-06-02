@@ -10,16 +10,7 @@ import {
 } from 'react-native';
 import { style } from './styles';
 import { getPetSource } from '../../utils/petUtils';
-
-interface Pet {
-    id: string;
-    name: string;
-    breed: string;
-    age: number;
-    weight: number;
-    animalType: string;
-    photoUrl?: string;
-}
+import { Pet } from '../../services/petService';
 
 interface PetSelectorModalProps {
     visible: boolean;
@@ -34,8 +25,6 @@ export default function PetSelectorModal({
     onSelectPet,
     onClose
 }: PetSelectorModalProps) {
-    // ❌ REMOVA a função getPetImage daqui - agora usamos a do utilitário
-
     return (
         <Modal
             visible={visible}

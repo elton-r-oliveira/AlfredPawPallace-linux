@@ -6,7 +6,7 @@ import { themes } from "../../global/themes";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { saudeService } from "../../services/saudeService";
-import { petService } from "../../services/petService";
+import { petService, Pet } from "../../services/petService";
 
 import HealthRecordModal from '../../components/HealthRecordModal';
 import PetSelectorModal from '../../components/PetSelectorModal';
@@ -15,16 +15,6 @@ import { getPetSource, getTypeLabel, formatDate } from '../../utils/petUtils';
 import { HealthRecord } from "../../@types/HealthRecord";
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
-
-interface Pet {
-  id: string;
-  name: string;
-  breed: string;
-  age: number;
-  weight: number;
-  animalType: string;
-  photoUrl?: string;
-}
 
 export default function Saude() {
   const { usuario } = useAuth();

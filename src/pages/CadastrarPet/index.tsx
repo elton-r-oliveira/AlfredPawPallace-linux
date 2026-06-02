@@ -7,6 +7,7 @@ import {
   Alert,
   TextInput,
   Image,
+  Linking,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { style } from "./styles";
@@ -14,6 +15,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 import { petService } from "../../services/petService";
 import { API_URL } from "../../lib/api";
+import { FormField } from "../../components/FormField";
 
 const animalTypes = [
   { label: "Cão", value: "dog", image: require("../../assets/pets/dog.png") },
@@ -44,19 +46,32 @@ export default function CadastrarPet({ route, navigation }: any) {
     : null;
 
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const { status, canAskAgain } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria para escolher uma foto.');
+      if (!canAskAgain) {
+        Alert.alert(
+          'Permissão negada',
+          'Acesso à galeria foi bloqueado. Habilite nas configurações do celular.',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            { text: 'Abrir configurações', onPress: () => Linking.openSettings() },
+          ]
+        );
+      } else {
+        Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria para escolher uma foto.');
+      }
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaType.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
-    if (!result.canceled) {
-      setPhotoUri(result.assets[0].uri);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        quality: 0.7,
+      });
+      if (!result.canceled) {
+        setPhotoUri(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('[ImagePicker] Erro ao abrir galeria:', error);
+      Alert.alert('Erro', 'Não foi possível abrir a galeria.');
     }
   };
 
@@ -195,41 +210,33 @@ export default function CadastrarPet({ route, navigation }: any) {
             </ScrollView>
           </View>
 
-          <View style={style.inputGroup}>
-            <Text style={style.inputLabel}>Nome do Pet</Text>
-            <TextInput
-              style={style.selectInput}
-              placeholder="Ex: Totó"
-              value={name}
-              onChangeText={setName}
-            />
-          </View>
+          <FormField
+            label="Nome do Pet"
+            placeholder="Ex: Totó"
+            value={name}
+            onChangeText={setName}
+          />
 
-          <View style={style.inputGroup}>
-            <Text style={style.inputLabel}>Raça</Text>
-            <TextInput
-              style={style.selectInput}
-              placeholder="Ex: Labrador, Vira-Lata"
-              value={breed}
-              onChangeText={setBreed}
-            />
-          </View>
+          <FormField
+            label="Raça"
+            placeholder="Ex: Labrador, Vira-Lata"
+            value={breed}
+            onChangeText={setBreed}
+          />
 
           <View style={style.dateTimeContainer}>
-            <View style={[style.inputGroup, style.halfInput]}>
-              <Text style={style.inputLabel}>Idade (anos)</Text>
-              <TextInput
-                style={style.selectInput}
+            <View style={style.halfInput}>
+              <FormField
+                label="Idade (anos)"
                 placeholder="Ex: 5"
                 value={age}
                 onChangeText={setAge}
                 keyboardType="numeric"
               />
             </View>
-            <View style={[style.inputGroup, style.halfInput]}>
-              <Text style={style.inputLabel}>Peso (Kg)</Text>
-              <TextInput
-                style={style.selectInput}
+            <View style={style.halfInput}>
+              <FormField
+                label="Peso (Kg)"
                 placeholder="Ex: 15.5"
                 value={weight}
                 onChangeText={setWeight}

@@ -51,11 +51,12 @@ router.post('/', async (req, res) => {
   }
   try {
     const id = uuidv4();
+    const dataHoraMySQL = new Date(dataHoraAgendamento).toISOString().slice(0, 19).replace('T', ' ');
     const [rows] = await pool.execute('CALL s_criar_agendamento(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
       id, req.usuario.id, unidadeId,
       petId || null, petNome || null, petAnimalType || null,
       service, preco || null, tempoServico || null,
-      dataHoraAgendamento,
+      dataHoraMySQL,
     ]);
     res.status(201).json(rows[0][0]);
   } catch (err) {

@@ -1,63 +1,42 @@
-import { StyleSheet, Platform } from "react-native";
+import { StyleSheet } from "react-native";
 import { themes } from "../../global/themes";
 
 export const style = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: "flex-start", // Mantém o card mais pra cima
         alignItems: "center",
+        justifyContent: "center",
         paddingHorizontal: 20,
-        paddingTop: 60,
         backgroundColor: themes.login_cadastro.fundo,
     },
 
     boxTop: {
-        width: "100%",
         alignItems: "center",
         justifyContent: "center",
         marginBottom: 20,
     },
 
+    logo: {
+        width: 150,
+        height: 150,
+        resizeMode: "contain",
+    },
+
     boxMid: {
         width: "100%",
         backgroundColor: themes.login_cadastro.fundoBox,
-        paddingHorizontal: 20,
-        paddingVertical: 25,
+        padding: 20,
         borderRadius: 30,
-
-        // Alinhamento e espaçamento interno
         alignSelf: "center",
-        justifyContent: "center",
-
-        // 👉 Android
         elevation: 5,
-
-        // 👉 iOS
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 6,
     },
 
-    boxBottom: {
-        width: "100%",
-        alignItems: "center",
-        justifyContent: "center",
-        marginTop: 25,
-    },
-
-    titulo: {
-        fontSize: 15,
-        marginTop: 10,
-        marginBottom: 30,
-        color: themes.login_cadastro.titulo,
-        fontFamily: "Inter_600SemiBold",
-        textAlign: "center",
-    },
-
     entrar: {
         fontSize: 25,
-         marginTop: 20,
         marginBottom: 10,
         textAlign: "center",
         color: themes.login_cadastro.titulo,
@@ -73,11 +52,7 @@ export const style = StyleSheet.create({
         height: 50,
         backgroundColor: themes.login_cadastro.titulo,
         borderRadius: 20,
-
-        // 👉 Android
         elevation: 5,
-
-        // 👉 iOS
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
@@ -101,5 +76,45 @@ export const style = StyleSheet.create({
     linkCadastro: {
         fontSize: 15,
         fontFamily: "Baloo2_800ExtraBold",
+    },
+
+    titulo: {
+        fontSize: 15,
+        marginTop: 10,
+        color: themes.login_cadastro.titulo,
+        fontFamily: "Inter_600SemiBold",
+    },
+
+    toggle: {
+        flexDirection: "row",
+        borderRadius: 25,
+        overflow: "hidden",
+        marginBottom: 16,
+        elevation: 3,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+    },
+
+    toggleOption: {
+        flex: 1,
+        paddingVertical: 10,
+        alignItems: "center",
+        backgroundColor: "#ddd",
+    },
+
+    toggleActive: {
+        backgroundColor: themes.colors.secundary,
+    },
+
+    toggleText: {
+        fontWeight: "600",
+        color: "#555",
+        fontFamily: "Inter_600SemiBold",
+    },
+
+    toggleTextActive: {
+        color: "#fff",
     },
 });

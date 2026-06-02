@@ -67,65 +67,28 @@ export default function Cadastro({ navigation }: Props) {
   return (
     <View style={style.container}>
       <View style={style.boxTop}>
-        <Image source={Logo} />
-        <Text style={style.titulo}>Bem-vindo a Lu PetShop</Text>
-
-        <View
-          style={{
-            position: "absolute",
-            bottom: -40.2,
-            left: 0,
-            right: 0,
-            zIndex: 10,
-            flexDirection: "row",
-            justifyContent: "center",
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              width: "70%",
-              borderRadius: 25,
-              overflow: "hidden",
-              elevation: 5,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.2,
-              shadowRadius: 6,
-            }}
-          >
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                backgroundColor: tipo === "cliente" ? themes.colors.secundary : "#ddd",
-                paddingVertical: 10,
-                alignItems: "center",
-              }}
-              onPress={() => setTipo("cliente")}
-            >
-              <Text style={{ color: tipo === "cliente" ? "#fff" : "#555", fontWeight: "600" }}>
-                Cliente
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                backgroundColor: tipo === "funcionario" ? themes.colors.secundary : "#ddd",
-                paddingVertical: 10,
-                alignItems: "center",
-              }}
-              onPress={() => setTipo("funcionario")}
-            >
-              <Text style={{ color: tipo === "funcionario" ? "#fff" : "#555", fontWeight: "600" }}>
-                Funcionário
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <Image source={Logo} style={style.logo} />
       </View>
 
       <View style={style.boxMid}>
+        <View style={style.toggle}>
+          <TouchableOpacity
+            style={[style.toggleOption, tipo === "cliente" && style.toggleActive]}
+            onPress={() => setTipo("cliente")}
+          >
+            <Text style={[style.toggleText, tipo === "cliente" && style.toggleTextActive]}>
+              Cliente
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[style.toggleOption, tipo === "funcionario" && style.toggleActive]}
+            onPress={() => setTipo("funcionario")}
+          >
+            <Text style={[style.toggleText, tipo === "funcionario" && style.toggleTextActive]}>
+              Funcionário
+            </Text>
+          </TouchableOpacity>
+        </View>
         <Text style={style.entrar}>Cadastre-se</Text>
 
         {tipo === "funcionario" ? (

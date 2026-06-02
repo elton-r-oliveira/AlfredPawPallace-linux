@@ -10,6 +10,7 @@ import EnderecoInput from "../../components/EnderecoInput";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { usuarioService } from "../../services/usuarioService";
+import { FormField } from "../../components/FormField";
 
 type PerfilScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Perfil">;
 
@@ -235,48 +236,31 @@ export default function Perfil() {
         <Text style={style.sectionTitle}>Informações do Perfil</Text>
 
         <View style={{ margin: 20 }}>
-          <View style={style.inputGroup}>
-            <Text style={style.inputLabel}>Nome</Text>
-            <View style={style.selectInput}>
-              <Ionicons name="person-outline" size={20} color={themes.colors.secundary} style={style.inputIcon} />
-              <TextInput
-                style={style.selectInputText}
-                value={nome}
-                onChangeText={setNome}
-                placeholder="Seu nome completo"
-                placeholderTextColor={themes.telaPerfil.textos_placeholder}
-                editable={editing}
-              />
-            </View>
-          </View>
+          <FormField
+            label="Nome"
+            icon={<Ionicons name="person-outline" size={20} color={themes.colors.secundary} />}
+            value={nome}
+            onChangeText={setNome}
+            placeholder="Seu nome completo"
+            editable={editing}
+          />
 
-          <View style={style.inputGroup}>
-            <Text style={style.inputLabel}>E-mail</Text>
-            <View style={[style.selectInput, { backgroundColor: themes.telaPerfil.nao_editavel }]}>
-              <Fontisto name="email" size={20} color={themes.colors.secundary} style={style.inputIcon} />
-              <TextInput
-                style={[style.selectInputText, { color: themes.telaPerfil.textos_labels }]}
-                value={email}
-                editable={false}
-              />
-            </View>
-          </View>
+          <FormField
+            label="E-mail"
+            icon={<Fontisto name="email" size={20} color={themes.colors.secundary} />}
+            value={email}
+            editable={false}
+          />
 
-          <View style={style.inputGroup}>
-            <Text style={style.inputLabel}>Telefone</Text>
-            <View style={style.selectInput}>
-              <Ionicons name="call-outline" size={20} color={themes.colors.secundary} style={style.inputIcon} />
-              <TextInput
-                style={style.selectInputText}
-                value={telefone}
-                onChangeText={setTelefone}
-                placeholder="(11) 99999-9999"
-                placeholderTextColor={themes.telaPerfil.textos_placeholder}
-                keyboardType="phone-pad"
-                editable={editing}
-              />
-            </View>
-          </View>
+          <FormField
+            label="Telefone"
+            icon={<Ionicons name="call-outline" size={20} color={themes.colors.secundary} />}
+            value={telefone}
+            onChangeText={setTelefone}
+            placeholder="(11) 99999-9999"
+            keyboardType="phone-pad"
+            editable={editing}
+          />
 
           <View style={style.inputGroup}>
             <EnderecoInput
