@@ -329,7 +329,7 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                         </Text>
                     ) : (
                         <ScrollView
-                            horizontal
+                            horizontal={unidades.length > 1}
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={{ flexDirection: "row", gap: 16, paddingVertical: 10 }}
                         >
@@ -339,7 +339,7 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                                     activeOpacity={0.9}
                                     onPress={() => setUnidadeSelecionada(unidade)}
                                     style={{
-                                        width: 250,
+                                        width: unidades.length === 1 ? '100%' : 250,
                                         backgroundColor: unidadeSelecionada?.id === unidade.id ? themes.colors.secundary : "#fff",
                                         borderRadius: 16,
                                         overflow: "hidden",
