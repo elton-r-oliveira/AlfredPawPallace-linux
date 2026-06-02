@@ -83,18 +83,20 @@ export const MeusAgendamentos: React.FC<MeusAgendamentosProps> = ({
                 meusAgendamentos
                     .slice()
                     .sort((a, b) => {
-                        const timeA = a.dataHoraAgendamento instanceof Date ? a.dataHoraAgendamento.getTime() : 0;
-                        const timeB = b.dataHoraAgendamento instanceof Date ? b.dataHoraAgendamento.getTime() : 0;
-                        return timeB - timeA; // mais recente primeiro
+                        const timeA = new Date(a.dataHoraAgendamento ?? a.data_hora_agendamento ?? 0).getTime();
+                        const timeB = new Date(b.dataHoraAgendamento ?? b.data_hora_agendamento ?? 0).getTime();
+                        return timeB - timeA;
                     })
                     .map((item) => {
                         const statusColor = getStatusColor(item.status);
                         const statusIcon = getStatusIcon(item.status);
                         const serviceIcon = getServiceIcon(item.service);
 
-                        const date = item.dataHoraAgendamento instanceof Date ? item.dataHoraAgendamento : null;
-                        const formattedDate = date ? date.toLocaleDateString('pt-BR') : 'Data Indisponível';
-                        const formattedTime = date ? date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+                        const rawDate = item.dataHoraAgendamento ?? item.data_hora_agendamento;
+                        const date = rawDate ? new Date(rawDate) : null;
+                        const validDate = date && !isNaN(date.getTime()) ? date : null;
+                        const formattedDate = validDate ? validDate.toLocaleDateString('pt-BR') : 'Data Indisponível';
+                        const formattedTime = validDate ? validDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
 
                         return (
                             <TouchableOpacity
@@ -171,7 +173,7 @@ export const MeusAgendamentos: React.FC<MeusAgendamentosProps> = ({
                                 )}
 
                                 {/* LINHA: Data e Hora */}
-                                {date && (
+                                {rawDate && (
                                     <View style={style.detailRow}>
                                         <MaterialCommunityIcons name="calendar-clock" size={18} color="#777" />
                                         <Text style={style.detailValue}> {formattedDate} às {formattedTime}</Text>

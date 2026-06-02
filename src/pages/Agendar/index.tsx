@@ -145,7 +145,7 @@ export default function Agendar() {
   const abrirDetalhesAgendamento = (agendamento: any) => {
     setAgendamentoSelecionado({
       ...agendamento,
-      dataHoraAgendamento: parseDate(agendamento.dataHoraAgendamento),
+      dataHoraAgendamento: parseDate(agendamento.dataHoraAgendamento ?? (agendamento as any).data_hora_agendamento),
     });
     setModalDetalhesVisible(true);
   };
@@ -168,9 +168,14 @@ export default function Agendar() {
       try {
         setLoadingAgendamentos(true);
         const lista = await agendamentoService.listar();
-        const listaMapped = lista.map(item => ({
+        const listaMapped = lista.map((item: any) => ({
           ...item,
-          dataHoraAgendamento: new Date(item.dataHoraAgendamento),
+          dataHoraAgendamento: new Date(item.dataHoraAgendamento ?? item.data_hora_agendamento),
+          petNome:       item.petNome       ?? item.pet_nome,
+          petAnimalType: item.petAnimalType ?? item.pet_animal_type,
+          petId:         item.petId         ?? item.pet_id,
+          unidadeId:     item.unidadeId     ?? item.unidade_id,
+          tempoServico:  item.tempoServico  ?? item.tempo_servico,
         }));
         setMeusAgendamentos(listaMapped);
       } catch (error) {
