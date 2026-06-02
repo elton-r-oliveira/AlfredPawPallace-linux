@@ -1,62 +1,62 @@
 export const themes = {
     colors: {
-        corTexto: '#c0a8a3',
-        dewormer: '#c0a8a3',
-        vaccine: '#c0a8a3',
-        antiparasitic: '#c0a8a3',
-        secundary: '#7A5947',
-        lightGray: '#FFFDF2',
-        quaseMarrom: '#a8685c',
-        bgScreen: '#901812',
-        inputText: '#575757ff',
-        iconeQuickAcess1: '#583C2D',
-        iconeQuickAcess2: '#F6C2B8',
-        iconeQuickAcess3: '#FFF7EB',
-        iconeQuickAcess4: '',
-        warning: '',
-        success: '',
-        cancelado: '',
-        info: ''
+        corTexto:          '#C4A882',  // bege quente (pelo claro do cachorro)
+        dewormer:          '#C4A882',
+        vaccine:           '#C4A882',
+        antiparasitic:     '#C4A882',
+        secundary:         '#7A5230',  // marrom médio (pelo)
+        lightGray:         '#FFFDF2',  // branco quente
+        quaseMarrom:       '#C47830',  // laranja-marrom (pelo principal)
+        bgScreen:          '#5C3010',  // marrom escuro (contorno da logo)
+        inputText:         '#575757',
+        iconeQuickAcess1:  '#3D1F08',  // marrom muito escuro
+        iconeQuickAcess2:  '#F5D08A',  // creme (rosto do cachorro)
+        iconeQuickAcess3:  '#FFF8EE',  // fundo creme
+        iconeQuickAcess4:  '',
+        warning:           '#E8A020',  // dourado (placa)
+        success:           '#1ABCBC',  // teal (gravata borboleta)
+        cancelado:         '#C0392B',  // vermelho (só para cancelar/deletar)
+        info:              '#7A5230',
     },
     login_cadastro: {
-        fundo: '#FFF5E5',
-        fundoBox: '#FFFDF2',
+        fundo:       '#FFF8EE',
+        fundoBox:    '#FFFDF2',
         campo_input: '#FFFDF2',
-        texto_input: '#C0A8A3',
-        icone_input: '#C0A8A3',
-        titulo: '#7A5947',
+        texto_input: '#C4A882',
+        icone_input: '#C4A882',
+        titulo:      '#7A5230',
     },
     BottomBar: {
-        cor_fundo: '#FFFDF2',
-        cor_icones: '#7A5947',
-        cor_borda: '#901812'
+        cor_fundo:   '#FFFDF2',
+        cor_icones:  '#7A5230',
+        cor_borda:   '#5C3010',
     },
     TopBar: {
-        cor_fundo: '#FFF7EB',
-        cor_icones: '#7A5947',
-        cor_borda: '#901812'
+        cor_fundo:   '#FFF8EE',
+        cor_icones:  '#7A5230',
+        cor_borda:   '#5C3010',
     },
     telaHome: {
-        fundo: '#FFF5E5',
-        texto1: '#583C2D',
-        fundo2: '#A8685C',
-        texto2: '#7A5947',
+        fundo:  '#FFF8EE',
+        texto1: '#3D1F08',
+        fundo2: '#C47830',
+        texto2: '#7A5230',
     },
     telaPets: {
-        fundo: '#FFF5E5',
-        fundoCard: '#FFFDF2',
-        borderCard: '#7A5947',
-        petName: '#7A5947',
-        petInfo: '#7A5947',
-        editButtom: '#7A5947',
-        deleteButtom: '#901812',
-        switchButtom: '#7A5947'
+        fundo:       '#FFF8EE',
+        fundoCard:   '#FFFDF2',
+        borderCard:  '#7A5230',
+        petName:     '#7A5230',
+        petInfo:     '#7A5230',
+        editButtom:  '#7A5230',
+        deleteButtom:'#C0392B',
+        switchButtom:'#7A5230',
     },
     telaPerfil: {
-        titulos_labels: '#7A5947',
-        textos_labels: '#c0a8a3',
-        textos_placeholder: '#c0a8a3',
-        fundo_inputs: '#fff',
-        nao_editavel: '#eeeeeeff',
-    }
+        titulos_labels:      '#7A5230',
+        textos_labels:       '#C4A882',
+        textos_placeholder:  '#C4A882',
+        fundo_inputs:        '#fff',
+        nao_editavel:        '#eeeeee',
+    },
 }
